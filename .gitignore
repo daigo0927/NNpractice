@@ -1,0 +1,7 @@
+*.gz
+__pycashe__
+*~
+.git
+.DS_Store
+.ipynb_checkpoint
+.python-version
