@@ -56,7 +56,8 @@ def DiscriminatorModel():
     model = Model(input = images, output = outputs)
 
     return model
-    
+
+
     
 
     
