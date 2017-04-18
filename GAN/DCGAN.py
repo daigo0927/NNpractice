@@ -35,7 +35,7 @@ def GeneratorModel():
     x = Permute((1, 2, 0))(x)
     images = Activation('tanh')(x)
 
-    model = Model(input = inputs, output = images)
+    model = Model(inputs = inputs, outputs = images)
 
     return model
 
@@ -53,7 +53,7 @@ def DiscriminatorModel():
     x = Dense(1)(x)
     outputs = Activation('sigmoid')(x)
 
-    model = Model(input = images, output = outputs)
+    model = Model(inputs = images, outputs = outputs)
 
     return model
 
