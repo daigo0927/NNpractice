@@ -80,7 +80,7 @@ def combine_images(generated_images):
     total = generated_images.shape[0]
     cols = int(math.sqrt(total))
     rows = math.ceil(float(total)/cols)
-    width, height = generated_images.shape[2:]
+    width, height = generated_images.shape[1:3]
     combined_image = np.zeros((height*rows, width*cols),
                               dtype=generated_images.dtype)
     
