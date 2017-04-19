@@ -87,13 +87,13 @@ def combine_images(generated_images):
     for index, image in enumerate(generated_images):
         i = int(index/cols)
         j = index % cols
-        combined_image[width*i:width*(i+1), height*j:height*(j+1)] = image[0, :, :]
+        combined_image[width*i:width*(i+1), height*j:height*(j+1)] = image[:, :, 0]
     return combined_image
 
 
 
-BatchSize = 40
-NumEpoch = 1
+BatchSize = 200
+NumEpoch = 30
 
 ResultPath = {}
 ResultPath['image'] = './image/'
@@ -133,25 +133,25 @@ def train(x_train):
 
             generated_images = g_model.predict(noise, verbose = 0)
 
-        if epoch%4 == 0:
-            image = combine_images(generated_images)
-            image = image*127.5 + 127.5
+            if index == num_batches-1:
+                image = combine_images(generated_images)
+                image = image*127.5 + 127.5
+                
+                Image.fromarray(image.astype(np.uint8))\
+                     .save(ResultPath['image'] + '{}.png'.format(epoch))
 
-            Image.fromarray(image.astype(np.unit8))\
-                .save(ResultPath['image'] + '{}.png'.format(epoch))
+            x = np.concatenate((image_batch, generated_images))
+            y = [1]*BatchSize + [0]*BatchSize
+            d_loss = d_model.train_on_batch(x, y)
 
-        x = np.concatenate((image_batch, generated_images))
-        y = [1]*BatchSize + [0]*BatchSize
-        d_loss = d_model.train_on_batch(x, y)
+            noise = np.array([np.random.uniform(-1,1, 100) \
+                              for _ in range(BatchSize)])
+            g_loss = dcgan.train_on_batch(noise, [1]*BatchSize)
 
-        noise = np.array([np.random.uniform(-1,1, 100) \
-                          for _ in range(BatchSize)])
-        g_loss = dcgan.train_on_batch(noise, [1]*BatchSize)
-
-        print('epoch:{}, batch:{}, g_loss:{}, d_loss:{}'.format(epoch,
-                                                                index,
-                                                                g_loss,
-                                                                d_loss))
+            print('epoch:{}, batch:{}, g_loss:{}, d_loss:{}'.format(epoch,
+                                                                    index,
+                                                                    g_loss,
+                                                                    d_loss))
 
     g_model.save_weights('generator.h5')
     d_model.save_weights('discriminator.h5')
