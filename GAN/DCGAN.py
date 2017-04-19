@@ -3,14 +3,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os, sys
+from PIL import Image
+import h5py
 
-from keras.models import Model
+from keras.models import Model, Sequential
 from keras.layers import Input, Dense, Flatten, Dropout, Activation, Reshape
 from keras.layers.core import Permute
 from keras.layers.advanced_activations import LeakyReLU
 from keras.layers.pooling import MaxPooling2D
 from keras.layers.normalization import BatchNormalization
 from keras.layers.convolutional import UpSampling2D, Conv2D
+from keras.optimizers import Adam
 
 def GeneratorModel():
 
@@ -21,19 +25,18 @@ def GeneratorModel():
     x = Dense(128*8*8*3)(x)
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
-    x = Reshape((128*3, 8, 8))(x) 
+    x = Reshape((8, 8, 128*3))(x) 
     x = UpSampling2D((2,2))(x)
-    x = Conv2D(64*3, (5,5), padding = 'same')(x) # shape(64, 16, 16, 3)
+    x = Conv2D(64*3, (5,5), padding = 'same')(x) # shape(None, 16, 16, 64*3)
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
     x = UpSampling2D((2,2))(x)
-    x = Conv2D(32*3, (5,5), padding = 'same')(x) # shape(32, 32, 32, 3)
+    x = Conv2D(32*3, (5,5), padding = 'same')(x) # shape(None, 32, 32, 32*3)
     x = BatchNormalization()(x)
     x = Activation('relu')(x)
     x = UpSampling2D((2,2))(x)
-    x = Conv2D(1*3, (5,5), padding = 'same')(x) # shape(1, 64, 64, 3)
-    x = Permute((1, 2, 0))(x)
-    images = Activation('tanh')(x)
+    x = Conv2D(1*3, (5,5), padding = 'same')(x) # shape(None, 64, 64, 1*3)
+    images = Activation('tanh')(x) # shape(None, )
 
     model = Model(inputs = inputs, outputs = images)
 
@@ -57,7 +60,105 @@ def DiscriminatorModel():
 
     return model
 
+def dcganModel():
 
+    d_model = DiscriminatorModel()
+    d_model.trainable = False
+
+    g_model = GeneratorModel()
+    
+    inputs = Input(shape = (100,))
+    images = g_model(inputs = inputs)
+    outputs = d_model(inputs = images)
+    # model = Sequential([g_model, d_model])
+    model = Model(inputs = inputs, outputs = outputs)
+
+    return model
+
+def combine_images(generated_images):
+    total = generated_images.shape[0]
+    cols = int(math.sqrt(total))
+    rows = math.ceil(float(total)/cols)
+    width, height = generated_images.shape[2:]
+    combined_image = np.zeros((height*rows, width*cols),
+                              dtype=generated_images.dtype)
+    
+    for index, image in enumerate(generated_images):
+        i = int(index/cols)
+        j = index % cols
+        combined_image[width*i:width*(i+1), height*j:height*(j+1)] = image[0, :, :]
+    return combined_image
+
+
+
+BatchSize = 200
+NumEpoch = 1
+
+ResultPath = {}
+ResultPath['image'] = './image/'
+ResultPath['model'] = './model/'
+for path in ResultPath:
+    if not os.path.exists(path):
+        os.mkdir(path)
+        
+
+def train(x_train):
+    # x_train.shape(instance, 64, 64, 3)
+    # not need test data, labels
+    x_train = (x_train.astype(np.float32) - 127.5)/127.5
+
+    d_model = DiscriminatorModel()
+    d_opt = Adam(lr = 1e-5, beta_1 = 0.1)
+    d_model.compile(loss = 'binary_crossentropy',
+                    optimizer = d_opt)
+
+    g_model = GeneratorModel()
+    dcgan = Sequential([g_model, d_model])
+    g_opt = Adam(lr = 2e-4, beta_1 = 0.5)
+    dcgan.compile(loss = 'binary_crossentropy', optimizer = g_opt)
+    # dcgan.summary()
+
+    num_batches = int(x_train.shape[0]/BatchSize)
+    print('Number of batches : {}'.format(num_batches))
+
+    # '''
+    for epoch in range(NumEpoch):
+
+        for index in range(num_batches):
+
+            noise = no.array([np.random.uniform(-1, 1, 100)\
+                              for _ in range(BatchSize)])
+            image_batch = x_train[index*BatchSize:(index+1)*BatchSize]
+
+            generated_images = g_model.predict(noise, verbose = 0)
+
+        if epoch%4 == 0:
+            image = combine_images(generated_images)
+            image = image*127.5 + 127.5
+
+            Image.fromarray(image.astype(np.unit8))\
+                .save(ResultPath['image'] + '{}.png'.format(epoch))
+
+        x = np.concatenate((image_batch, generated_images))
+        y = [1]*BatchSize + [0]*BatchSize
+        d_loss = d_model.train_on_batch(x, y)
+
+        noise = np.array([np.random.uniform(-1,1, 100) \
+                          for _ in range(BatchSize)])
+        g_loss = dcgan.train_on_batch(noise, [1]*BatchSize)
+
+        print('epoch:{}, batch:{}, g_loss:{}, d_loss:{}'.format(epoch,
+                                                                index,
+                                                                g_loss,
+                                                                d_loss))
+
+    g_model.save_weights('generator.h5')
+    d_model.save_weights('discriminator.h5')
+    # '''
+
+    
+    
+    
     
 
     
