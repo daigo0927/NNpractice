@@ -6,6 +6,7 @@ import seaborn as sns
 import os, sys
 from PIL import Image
 import h5py
+import math
 
 from keras.models import Model, Sequential
 from keras.layers import Input, Dense, Flatten, Dropout, Activation, Reshape
@@ -91,7 +92,7 @@ def combine_images(generated_images):
 
 
 
-BatchSize = 200
+BatchSize = 40
 NumEpoch = 1
 
 ResultPath = {}
