@@ -92,8 +92,8 @@ def combine_images(generated_images):
 
 
 
-BatchSize = 200
-NumEpoch = 30
+BatchSize = 30
+NumEpoch = 100
 
 ResultPath = {}
 ResultPath['image'] = './image/'
@@ -115,7 +115,7 @@ def train(x_train):
 
     g_model = GeneratorModel()
     dcgan = Sequential([g_model, d_model])
-    g_opt = Adam(lr = 2e-4, beta_1 = 0.5)
+    g_opt = Adam(lr = 2e-5, beta_1 = 0.5)
     dcgan.compile(loss = 'binary_crossentropy', optimizer = g_opt)
     # dcgan.summary()
 
@@ -133,20 +133,22 @@ def train(x_train):
 
             generated_images = g_model.predict(noise, verbose = 0)
 
+            x = np.concatenate((image_batch, generated_images))
+            y = [1]*BatchSize + [0]*BatchSize
+            d_loss = d_model.train_on_batch(x, y)
+
+            # train generator once in 3 iteration
+     
+            noise = np.array([np.random.uniform(-1,1, 100) \
+                              for _ in range(BatchSize)])
+            g_loss = dcgan.train_on_batch(noise, [1]*BatchSize)
+
             if index == num_batches-1:
                 image = combine_images(generated_images)
                 image = image*127.5 + 127.5
                 
                 Image.fromarray(image.astype(np.uint8))\
                      .save(ResultPath['image'] + '{}.png'.format(epoch))
-
-            x = np.concatenate((image_batch, generated_images))
-            y = [1]*BatchSize + [0]*BatchSize
-            d_loss = d_model.train_on_batch(x, y)
-
-            noise = np.array([np.random.uniform(-1,1, 100) \
-                              for _ in range(BatchSize)])
-            g_loss = dcgan.train_on_batch(noise, [1]*BatchSize)
 
             print('epoch:{}, batch:{}, g_loss:{}, d_loss:{}'.format(epoch,
                                                                     index,
