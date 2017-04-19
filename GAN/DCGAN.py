@@ -95,7 +95,7 @@ def combine_images(generated_images):
 
 
 BatchSize = 30
-NumEpoch = 100
+NumEpoch = 50
 
 ResultPath = {}
 ResultPath['image'] = './image/'
@@ -157,8 +157,8 @@ def train(x_train):
                                                                     g_loss,
                                                                     d_loss))
 
-    g_model.save_weights('generator.h5')
-    d_model.save_weights('discriminator.h5')
+    g_model.save_weights(ResultPath['model'] + 'generator.h5')
+    d_model.save_weights(ResultPath['model'] + 'discriminator.h5')
     # '''
 
     
