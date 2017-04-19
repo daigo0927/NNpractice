@@ -126,7 +126,7 @@ def train(x_train):
 
         for index in range(num_batches):
 
-            noise = no.array([np.random.uniform(-1, 1, 100)\
+            noise = np.array([np.random.uniform(-1, 1, 100)\
                               for _ in range(BatchSize)])
             image_batch = x_train[index*BatchSize:(index+1)*BatchSize]
 
