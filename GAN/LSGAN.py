@@ -129,7 +129,7 @@ def train(x_train):
      
             noise = np.array([np.random.uniform(-1,1, 100) \
                               for _ in range(BatchSize)])
-            g_loss = dcgan.train_on_batch(noise, [1]*BatchSize)
+            g_loss = lsgan.train_on_batch(noise, [1]*BatchSize)
 
             if index == num_batches-1:
                 image = combine_images(generated_images)
