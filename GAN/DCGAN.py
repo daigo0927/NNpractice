@@ -111,7 +111,7 @@ def train(x_train):
     x_train = (x_train.astype(np.float32) - 127.5)/127.5
 
     d_model = DiscriminatorModel()
-    d_opt = Adam(lr = 1e-5, beta_1 = 0.1)
+    d_opt = Adam(lr = 2e-4, beta_1 = 0.1)
     d_model.compile(loss = 'binary_crossentropy',
                     optimizer = d_opt)
 

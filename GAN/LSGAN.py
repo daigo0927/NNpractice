@@ -97,7 +97,7 @@ def train(x_train):
     x_train = (x_train.astype(np.float32) - 127.5)/127.5
 
     d_model = DiscriminatorModel()
-    d_opt = Adam(lr = 1e-5, beta_1 = 0.1)
+    d_opt = Adam(lr = 5e-5, beta_1 = 0.1)
     d_model.compile(loss = 'mean_squared_error',
                     optimizer = d_opt)
 
