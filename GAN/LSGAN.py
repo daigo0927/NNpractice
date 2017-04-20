@@ -99,10 +99,11 @@ def train(x_train):
     x_train = (x_train.astype(np.float32) - 127.5)/127.5
 
     d_model = DiscriminatorModel()
-    d_opt = Adam(lr = 5e-5, beta_1 = 0.1)
+    d_opt = Adam(lr = 2e-5, beta_1 = 0.1)
     d_model.compile(loss = 'mean_squared_error',
                     optimizer = d_opt)
 
+    d_model.trainable = False
     g_model = GeneratorModel()
     lsgan = Sequential([g_model, d_model])
     g_opt = Adam(lr = 1e-5, beta_1 = 0.5)

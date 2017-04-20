@@ -115,6 +115,7 @@ def train(x_train):
     d_model.compile(loss = 'binary_crossentropy',
                     optimizer = d_opt)
 
+    d_model.trainable = False
     g_model = GeneratorModel()
     dcgan = Sequential([g_model, d_model])
     g_opt = Adam(lr = 2e-5, beta_1 = 0.5)
