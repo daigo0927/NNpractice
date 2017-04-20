@@ -81,7 +81,7 @@ def combine_images(generated_images):
 
 
 BatchSize = 40
-NumEpoch = 100
+NumEpoch = 300
         
 
 def train(x_train, dist_path = './tmp/'):
