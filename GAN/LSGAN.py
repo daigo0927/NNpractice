@@ -82,28 +82,29 @@ def combine_images(generated_images):
 
 BatchSize = 40
 NumEpoch = 100
-
-ResultPath = {}
-ResultPath['image'] = './image/'
-ResultPath['model'] = './model/'
-for path in ResultPath:
-    if not os.path.exists(path):
-        os.mkdir(path)
         
 
-def train(x_train):
+def train(x_train, dist_path = './tmp/'):
     # x_train.shape(instance, 64, 64, 3)
     # not need test data, labels
     x_train = (x_train.astype(np.float32) - 127.5)/127.5
 
+    ResultPath = {}
+    ResultPath['image'] = dist_path + './image/'
+    ResultPath['model'] = dist_path + './model/'
+    for path in ResultPath:
+        if not os.path.exists(path):
+            os.mkdir(path)
+
+
     d_model = DiscriminatorModel()
-    d_opt = Adam(lr = 5e-5, beta_1 = 0.1)
+    d_opt = Adam(lr = 1e-4, beta_1 = 0.1)
     d_model.compile(loss = 'mean_squared_error',
                     optimizer = d_opt)
 
     g_model = GeneratorModel()
     lsgan = Sequential([g_model, d_model])
-    g_opt = Adam(lr = 1e-5, beta_1 = 0.5)
+    g_opt = Adam(lr = 2e-5, beta_1 = 0.5)
     lsgan.compile(loss = 'mean_squared_error', optimizer = g_opt)
     # dcgan.summary()
 
