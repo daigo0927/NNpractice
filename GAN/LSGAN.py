@@ -93,7 +93,7 @@ for path in ResultPath:
         os.mkdir(path)
 
 
-def train(x_train):
+def train(x_train, loadmodel = False):
     # x_train.shape(instance, 64, 64, 3)
     # not need test data, labels
     x_train = (x_train.astype(np.float32) - 127.5)/127.5
@@ -108,10 +108,19 @@ def train(x_train):
     lsgan = Sequential([g_model, d_model])
     g_opt = Adam(lr = 1e-5, beta_1 = 0.5)
     lsgan.compile(loss = 'mean_squared_error', optimizer = g_opt)
-    # dcgan.summary()
+    # lsgan.summary()
 
+    # load trained model params
+    if loadmodel:
+        weight_path = str(input('input weight dir : '))
+        d_model.load_weights(filepath = weight_path+'/lsgan_d.h5',
+                             by_name = False)
+        g_model.load_weights(filepath = weight_path+'/lsgan_g.h5',
+                             by_name = False)
+
+        
     num_batches = int(x_train.shape[0]/BatchSize)
-    print('Number of batches : {}'.format(num_batches))
+    print('Number of batches : {}, epochs : {}'.format(num_batches, NumEpoch))
 
     # '''
     for epoch in range(NumEpoch):
